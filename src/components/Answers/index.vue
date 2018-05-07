@@ -58,7 +58,7 @@ export default {
       }
     },
     select (answer) {
-      if (!this.exercise.answred) {
+      if (!this.exercise.answered) {
         answer.selected = true
         this.exercise.answered = true
       }

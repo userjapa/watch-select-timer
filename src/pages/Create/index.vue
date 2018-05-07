@@ -130,7 +130,8 @@ export default {
         answers: []
       },
       answer: {
-        correct: false
+        correct: false,
+        selected: false
       }
     }
   },
@@ -151,7 +152,8 @@ export default {
     addAnswer (answer) {
       this.exercise.answers.push(answer)
       this.answer = {
-        correct: false
+        correct: false,
+        selected: false
       }
     },
     checkAnswers (answers) {
