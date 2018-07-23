@@ -5,12 +5,15 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    exercises: [],
+    exercise: {
+      video: '',
+      questions: []
+    },
     toUpdate: null
   },
   getters: {
-    getExercises ({ exercises }) {
-      return exercises
+    getExercise ({ exercise }) {
+      return exercise
     },
     isToUpdate ({ toUpdate }) {
       if (toUpdate !== null) return true
@@ -18,18 +21,20 @@ export default new Vuex.Store({
     }
   },
   mutations: {
-    addExercise (state, exercise) {
-      state.exercises.push(exercise)
+    setExercise (state, exercise) {
+      state.exercise = exercise
     },
-    removeExercise (state, id) {
-      state.exercises.splice(id, 1)
+    addQuestion (state, question) {
+      state.exercise.questions.push(question)
+    },
+    removeQuestion (state, id) {
+      state.exercise.questions.splice(id, 1)
     },
     setToUpdate (state, id) {
-      console.log(id);
       state.toUpdate = id
     },
-    update (state, exercise) {
-      state.exercises[state.toUpdate] = exercise
+    update (state, question) {
+      state.exercise.questions[state.toUpdate] = question
     }
   }
 })

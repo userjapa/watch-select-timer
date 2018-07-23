@@ -4,14 +4,14 @@
       <h2>Create</h2>
     </div>
     <div class="item item-border">
-      <Answers :exercises="[exercise]"/>
+      <Answers :exercise="{ questions: [question], video: exercise.video }"/>
     </div>
     <div class="item item-border">
       <div class="container row">
         <div class="item flex-basis-400 item-border">
           <div class="container column">
             <div class="item">
-              <h4>Exercises</h4>
+              <h4>exercise.questions</h4>
             </div>
             <div class="item">
               <div class="container row line-top line-bottom">
@@ -25,16 +25,16 @@
                   <b>Options</b>
                 </div>
               </div>
-              <div class="container row line-bottom" v-for="(ex, index) in exercises">
+              <div class="container row line-bottom" v-for="(qst, index) in exercise.questions">
                 <div class="item col-1 no-padding-bottom">
                   {{ index + 1 }})
                 </div>
                 <div class="item col-6 no-padding-bottom">
-                  {{ ex.question }}
+                  {{ qst.question }}
                 </div>
                 <div class="item col-5 no-padding-bottom">
-                  <button class="btn btn-primary small" :disabled="$store.getters['isToUpdate']" @click="edit(ex, index)">Edit</button>
-                  <button class="btn btn-danger small" :disabled="$store.getters['isToUpdate']" @click="$store.commit('removeExercise', index)">Remove</button>
+                  <button class="btn btn-primary small" :disabled="$store.getters['isToUpdate']" @click="edit(qst, index)">Edit</button>
+                  <button class="btn btn-danger small" :disabled="$store.getters['isToUpdate']" @click="$store.commit('removeQuestion', index)">Remove</button>
                 </div>
               </div>
             </div>
@@ -45,24 +45,24 @@
             <div class="item">
               <div class="container">
                 <div class="item flex-basis-75 align-self-center">
-                  <label for="exercise_image">Image</label>
+                  <label for="question_image">Video</label>
                 </div>
                 <div class="item flex-basis-325">
-                  <input class="input" id="exercise_image" type="text" v-model="exercise.img" @click="exercise.img = `https://www.telegraph.co.uk/content/dam/video_previews/x/5/x5cgi0ode66q6vuxezqmehmexwer6bt-xlarge.jpg`" required/>
+                  <input class="input" id="question_image" type="file" @change="videoChanged($event.target.files[0])" required/>
                 </div>
               </div>
               <div class="container">
                 <div class="item flex-basis-75 align-self-center">
-                  <label for="exercise">Question</label>
+                  <label for="question">Question</label>
                 </div>
                 <div class="item flex-basis-325">
-                  <input class="input" id="exercise_question" type="text" v-model="exercise.question" @click="exercise.question = `Which vehicle appears in the picture?`" required/>
+                  <input class="input" id="question_question" type="text" v-model="question.question" @click="question.question = `Which vehicle appears in the picture?`" required/>
                 </div>
               </div>
               <div class="container">
                 <div class="item">
-                  <button class="btn btn-success" @click="save(exercise)" v-if="!$store.getters['isToUpdate']">Save</button>
-                  <button class="btn btn-primary" @click="update(exercise)" v-if="$store.getters['isToUpdate']">Update</button>
+                  <button class="btn btn-success" @click="save(question)" v-if="!$store.getters['isToUpdate']">Save</button>
+                  <button class="btn btn-primary" @click="update(question)" v-if="$store.getters['isToUpdate']">Update</button>
                   <button class="btn btn-danger" @click="cancelUpdate()" v-if="$store.getters['isToUpdate']">Cancel</button>
                 </div>
               </div>
@@ -82,7 +82,7 @@
                 </div>
               </form>
               <div class="container column">
-                <div class="item no-padding line-top line-bottom" v-if="exercise.answers.length > 0">
+                <div class="item no-padding line-top line-bottom" v-if="question.answers.length > 0">
                   <div class="container row">
                     <div class="item col-7 no-padding">
                       <b>Answer</b>
@@ -95,7 +95,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="item no-padding line-bottom" v-for="(aswr, index) in exercise.answers">
+                <div class="item no-padding line-bottom" v-for="(aswr, index) in question.answers">
                   <div class="container row">
                     <div class="item col-7 no-padding-bottom">
                       <input class="input" type="text" v-model="aswr.title">
@@ -104,7 +104,7 @@
                       <input type="radio" name="correct" @change="correctChange(aswr)" :checked="aswr.correct">
                     </div>
                     <div class="item col-3 no-padding-bottom">
-                      <button class="btn small btn-danger" @click="exercise.answers.splice(index, 1)">Remove</button>
+                      <button class="btn small btn-danger" @click="question.answers.splice(index, 1)">Remove</button>
                     </div>
                   </div>
                 </div>
@@ -124,25 +124,25 @@ export default {
   data () {
     return {
       exercise: {
-        img: '',
+        questions: []
+      },
+      question: {
         question: '',
-        answered: false,
         answers: []
       },
       answer: {
-        correct: false,
-        selected: false
+        correct: false
       }
     }
   },
   methods: {
-    save (exercise) {
-      if (this.checkAnswers(exercise.answers)) {
-        this.$store.commit('addExercise', exercise)
-        this.exercise = {
-          img: '',
+    save (question) {
+      if (this.checkAnswers(question.answers)) {
+        // this.$store.commit('addQuestion', question)
+        this.exercise.questions.push(question)
+        this.$store.commit('setExercise', this.exercise)
+        this.question = {
           question: '',
-          answered: false,
           answers: []
         }
       } else {
@@ -150,10 +150,9 @@ export default {
       }
     },
     addAnswer (answer) {
-      this.exercise.answers.push(answer)
+      this.question.answers.push(answer)
       this.answer = {
-        correct: false,
-        selected: false
+        correct: false
       }
     },
     checkAnswers (answers) {
@@ -163,36 +162,44 @@ export default {
       else return false
     },
     correctChange (answer) {
-      this.exercise.answers.map(x => {
+      this.question.answers.map(x => {
         if (x.title === answer.title) x.correct = true
         else x.correct = false
       })
     },
-    edit (exercise, id) {
+    edit (question, id) {
       this.$store.commit('setToUpdate', id)
-      this.exercise = exercise
+      this.question = question
     },
-    update (exercise) {
-      this.$store.commit('update', exercise)
+    update (question) {
+      this.$store.commit('update', question)
       this.cancelUpdate()
     },
     cancelUpdate () {
-      this.exercise = {
-        img: '',
+      this.question = {
         question: '',
         answered: false,
         answers: []
       }
       this.$store.commit('setToUpdate', null)
-    }
-  },
-  computed: {
-    exercises () {
-      return this.$store.getters['getExercises']
+    },
+    videoChanged (file) {
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = e => {
+          this.$set(this.exercise, 'video_old', file)
+          this.$set(this.exercise, 'video_original', file.name)
+          this.$set(this.exercise, 'video', e.target.result)
+        };
+        reader.readAsDataURL(file)
+      }
     }
   },
   components: {
     Answers
+  },
+  mounted () {
+    this.exercise = this.$store.getters['getExercise']
   }
 }
 </script>

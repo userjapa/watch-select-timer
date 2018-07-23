@@ -2,21 +2,21 @@
   <div class="container row">
     <div class="item flex-basis-400 item-border">
       <div>
-        <img :src="exercise.img">
+        <video :src="exercise.video"/>
       </div>
     </div>
     <div class="item flex-basis-400 item-border">
       <div class="container column">
         <div class="item">
-          {{ exercise.question }}
+          {{ question.question }}
         </div>
         <div class="item">
           <div
             class="text-align-left margin-bottom-10 option"
-            v-for="(aswr, index) in exercise.answers"
-            :class=" {
-              right: (exercise.answered && aswr.correct),
-              wrong: (exercise.answered && !aswr.correct && aswr.selected),
+            v-for="(aswr, index) in question.answers"
+            :class="{
+              right: (question.answered && aswr.correct),
+              wrong: (question.answered && !aswr.correct && aswr.selected),
               selected: aswr.selected
             }"
             @click="select(aswr)"
@@ -27,7 +27,7 @@
       </div>
       <div class="container justify-content-end align-content-end">
         <div class="margin-right-10">
-          <button class="btn next" @click="setCurrent(exercises)" v-if="!ended" :disabled="!exercise.answered">Next</button>
+          <button class="btn next" @click="setCurrent(exercise.questions)" v-if="!ended" :disabled="!question.answered">Next</button>
           <button class="btn next" v-if="ended" @click="finish()">Finished!</button>
         </div>
       </div>
@@ -39,26 +39,29 @@ export default {
   name: "Answers",
   data () {
     return {
-      exercise: {},
-      ended: false
+      question: {
+        answers: []
+      },
+      ended: false,
+      video: ''
     }
   },
   methods: {
-    setCurrent (exercises) {
-      for (const index in exercises) {
-        if (!exercises[index].answered) {
-          this.exercise = exercises[index]
+    setCurrent (questions) {
+      for (const index in questions) {
+        if (!questions[index].answered) {
+          this.question = this.exercise.questions[index]
           break
         }
-        console.log(parseInt(index), exercises.length - 1)
-        if (parseInt(index) === (exercises.length - 1)) {
-          this.exercise = exercises[index]
+        console.log(parseInt(index), questions.length - 1)
+        if (parseInt(index) === (questions.length - 1)) {
+          this.question = questions[index]
           this.ended = true
         }
       }
     },
     select (answer) {
-      if (!this.exercise.answered) {
+      if (!this.question.answered) {
         answer.selected = true
         this.exercise.answered = true
       }
@@ -68,16 +71,20 @@ export default {
     }
   },
   props: [
-    'exercises'
+    'exercise'
   ],
   watch: {
-    exercises: function (exercises) {
+    'exercise.video': function (video) {
+      console.log('video changed');
+    },
+    'exercise.questions': function (exercise) {
+      console.log('questions changed');
       this.ended = false
-      this.setCurrent(exercises)
+      this.setCurrent(exercise.questions)
     }
   },
   mounted () {
-    this.setCurrent(this.exercises)
+    this.setCurrent(this.exercise.questions)
   }
 }
 </script>

@@ -4,7 +4,7 @@
       <h2>Preview</h2>
     </div>
     <div class="item">
-      <Answers :exercises="exercises"/>
+      <Answers :exercise="exercise"/>
     </div>
   </div>
 </template>
@@ -14,8 +14,8 @@ import Answers from '../../components/Answers'
 export default {
   name: "Preview",
   computed: {
-    exercises () {
-      return this.$store.getters['getExercises']
+    exercise () {
+      return this.$store.getters['getExercise']
     }
   },
   components: {
