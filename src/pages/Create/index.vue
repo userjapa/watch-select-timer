@@ -4,14 +4,14 @@
       <h2>Create</h2>
     </div>
     <div class="item item-border">
-      <Answers :exercise="{ questions: [question], video: exercise.video }"/>
+      <Answers :exercise="copy"/>
     </div>
     <div class="item item-border">
       <div class="container row">
         <div class="item flex-basis-400 item-border">
           <div class="container column">
             <div class="item">
-              <h4>exercise.questions</h4>
+              <h4>Questions</h4>
             </div>
             <div class="item">
               <div class="container row line-top line-bottom">
@@ -57,6 +57,14 @@
                 </div>
                 <div class="item flex-basis-325">
                   <input class="input" id="question_question" type="text" v-model="question.question" @click="question.question = `Which vehicle appears in the picture?`" required/>
+                </div>
+              </div>
+              <div class="container">
+                <div class="item flex-basis-75 align-self-center">
+                  <label for="question">Timer (seconds)</label>
+                </div>
+                <div class="item flex-basis-325">
+                  <input class="input" id="question_question" type="number" v-model="question.timer" required/>
                 </div>
               </div>
               <div class="container">
@@ -117,22 +125,31 @@
   </div>
 </template>
 <script>
+import _ from 'lodash'
 import Answers from '../../components/Answers'
 
 export default {
   name: "Create",
   data () {
     return {
+      copy: {
+        video: '',
+        questions: []
+      },
       exercise: {
+        video: '',
         questions: []
       },
       question: {
         question: '',
-        answers: []
+        answers: [],
+        timer: 0
       },
       answer: {
         correct: false
-      }
+      },
+      allowed: false,
+      interval: null
     }
   },
   methods: {
@@ -143,7 +160,8 @@ export default {
         this.$store.commit('setExercise', this.exercise)
         this.question = {
           question: '',
-          answers: []
+          answers: [],
+          timer: 0
         }
       } else {
         alert('Must inform answer and select the correct one')
@@ -163,9 +181,10 @@ export default {
     },
     correctChange (answer) {
       this.question.answers.map(x => {
-        if (x.title === answer.title) x.correct = true
-        else x.correct = false
+        if (x.title === answer.title) this.$set(x, 'correct', true)
+        else this.$set(x, 'correct', false)
       })
+      this.doClone()
     },
     edit (question, id) {
       this.$store.commit('setToUpdate', id)
@@ -178,8 +197,8 @@ export default {
     cancelUpdate () {
       this.question = {
         question: '',
-        answered: false,
-        answers: []
+        answers: [],
+        timer: 0
       }
       this.$store.commit('setToUpdate', null)
     },
@@ -193,10 +212,30 @@ export default {
         };
         reader.readAsDataURL(file)
       }
+    },
+    doClone () {
+      let question = _.cloneDeep(this.question)
+      this.$set(question, 'answered', false)
+      this.$set(question, 'hit', false)
+      question.answers.map(a => {
+        this.$set(a, 'selected', false)
+      })
+      this.$set(this.copy, 'questions', [ question ])
     }
   },
   components: {
     Answers
+  },
+  watch: {
+    'exercise.video': function () {
+      this.$set(this.copy, 'video', this.exercise.video)
+    },
+    'question.question': function () {
+      this.doClone()
+    },
+    'question.answers': function () {
+      this.doClone()
+    }
   },
   mounted () {
     this.exercise = this.$store.getters['getExercise']

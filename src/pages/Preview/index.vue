@@ -9,13 +9,15 @@
   </div>
 </template>
 <script>
+import _ from 'lodash'
 import Answers from '../../components/Answers'
 
 export default {
   name: "Preview",
   computed: {
     exercise () {
-      return this.$store.getters['getExercise']
+      const exercise = _.cloneDeep(this.$store.getters['getExercise'])
+      return exercise
     }
   },
   components: {
