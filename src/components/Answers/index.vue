@@ -59,7 +59,8 @@ export default {
       videoFinished: false,
       answering: false,
       playing: false,
-      time: 0
+      time: 0,
+      interval: null
     }
   },
   methods: {
@@ -67,6 +68,7 @@ export default {
       for (const index in questions) {
         if (!questions[index].answered) {
           this.question = this.exercise.questions[index]
+          this.time = this.question.timer
           break
         }
         console.log(parseInt(index), questions.length - 1)
@@ -90,21 +92,17 @@ export default {
     startTimer () {
       this.answering = true
       this.interval = setInterval(() => {
-        this.time++
-        if (this.time == this.question.timer) {
+        this.time--
+        if (this.time == 0) {
           clearInterval(this.interval)
           this.$set(this.question, 'answered', true)
           this.$set(this.question, 'hit', false)
         }
       }, 1000)
     },
-    stopTimer () {
-      this.time = 0
-      this.answering = false
-    },
     next (questions) {
       this.setCurrent(questions)
-      this.stopTimer()
+      this.answering = false
     }
   },
   props: [
@@ -112,7 +110,6 @@ export default {
   ],
   watch: {
     'exercise.questions': function (questions) {
-      console.log('questions changed');
       this.ended = false
       console.log();
       this.setCurrent(questions)
